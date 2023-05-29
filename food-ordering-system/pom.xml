@@ -9,6 +9,10 @@
     <version>1.0-SNAPSHOT</version>
     <modules>
         <module>order-service</module>
+        <module>order-service/order-domain</module>
+        <module>order-service/order-api</module>
+        <module>order-service/order-data-access</module>
+        <module>order-service/order-messaging</module>
     </modules>
 
     <!--    i will use spring boot for childs microservices-->

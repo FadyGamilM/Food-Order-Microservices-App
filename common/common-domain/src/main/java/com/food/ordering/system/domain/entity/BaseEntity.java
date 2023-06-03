@@ -3,7 +3,7 @@ package com.food.ordering.system.domain.entity;
 import java.util.Objects;
 
 // i will extend this BaseEntity class into all other entites in different domains, and replace the generic ID type with the
-// custom identifier type of each domain entity
+// custom value object identifier type of each domain entity
 public abstract class BaseEntity<ID> {
     ID id;
 

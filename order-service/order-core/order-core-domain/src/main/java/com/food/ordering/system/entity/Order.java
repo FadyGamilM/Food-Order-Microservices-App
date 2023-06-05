@@ -39,11 +39,11 @@ public class Order extends AggregateRoot<OrderID> {
     private final Money totalPrice;
 
     // each order has a lsit of order items
-    private List<OrderItem> orderItems;
+    private List<OrderItem> orderItems = new ArrayList<OrderItem>();
 
     private OrderStatus status; // not final because it will change through the life-cycle of the app
 
-    private List<String> failureMsgs;
+    private List<String> failureMsgs = new ArrayList<String>();
 
 
     // ? : implementation of the builder pattern
@@ -192,8 +192,8 @@ public class Order extends AggregateRoot<OrderID> {
     }
 
     /**
-     * the order service will publish an event to notify the restuerant service that the payment service has finished the payment process,
-     * and we need the restuerant approval, so we will change the status from PAID -> APPROVED
+     * the order service published an event to resturent with PAID order, the resturent approved the order and published the event with approval
+     * the order-service consumed that and will change the status from PAID -> APPROVED
      */
     public void approve() {
         // ORDER-SERVICE received the
@@ -203,19 +203,28 @@ public class Order extends AggregateRoot<OrderID> {
     }
 
     /**
-     * the order service will publish an event to notify the payment service that after the payment is processed, the resturent service
-     * had refused the order and the status now is cancelling and we need the payment service to rollback the payment operation.
-     * and we will change the status from APPROVED -> CANCELLING
+     * the order publish an event after the payment is completed, and the order is PAID, but the resutrent has refused the order and published
+     * an event with that refuse response, the order service consumed the event from the resturant.
+     * so the order-service will change the status from PAID -> CANCELLING
      */
-    public void initCancellation() {
+    public void initCancellation(List<String> failureMsgs) {
         if (this.status != OrderStatus.APPROVED)
             throw new OrderDomainException("order is not in the valid state for resturant to refuse the order");
         this.status = OrderStatus.CANCELLING;
+        if (failureMsgs != null) this.failureMsgs.addAll(failureMsgs.stream().filter(msg -> !msg.isBlank()).toList());
+
     }
 
-    // * change the status from CANCELLING -> CANCELLED
+    /**
+     * the order service might publish an event when the order is PENDING and ready for payment to payment service, and the payment might faild
+     * so the order-service will receive the response from payment service with failure and will change from PENDING -> CANCELLED
+     * <p>
+     * the order service might publish an event to the resturent service after payment is done, but resturent refuse so the order service
+     * then the order will receive the response from resturent and after chaning the status from PAID -> CANCELLING, then the order service will
+     * notify the payment to rollback the payment and based on the response from the payment the order will set from CANCELLING -> CANCELLED
+     */
     public void cancel() {
-        if (this.status != OrderStatus.CANCELLING)
+        if (this.status != OrderStatus.CANCELLING && this.status != OrderStatus.PENDING)
             throw new OrderDomainException("order is not in the valid state to be cancelled !");
         this.status = OrderStatus.CANCELLED;
     }

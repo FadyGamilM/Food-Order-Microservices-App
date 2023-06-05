@@ -180,20 +180,43 @@ public class Order extends AggregateRoot<OrderID> {
 
     }
 
-    // * change the status from PENDING -> PAID
+    /**
+     * the order service will publish an event to notify the payment service to proceed with the payment process
+     * and we will change the status from PENDING -> PAID
+     */
     public void pay() {
+        if (this.status != OrderStatus.PENDING)
+            throw new OrderDomainException("Order is not in the valid state to be raedy for payment process");
+
+        this.status = OrderStatus.PAID;
     }
 
-    // * change the status from PAID -> APPROVED
+    /**
+     * the order service will publish an event to notify the restuerant service that the payment service has finished the payment process,
+     * and we need the restuerant approval, so we will change the status from PAID -> APPROVED
+     */
     public void approve() {
+        // ORDER-SERVICE received the
+        if (this.status != OrderStatus.PAID)
+            throw new OrderDomainException("Order is not in the valid state for resturent to approve the order");
+        this.status = OrderStatus.APPROVED;
     }
 
-    // * change the status from APPROVED -> CANCELLING
+    /**
+     * the order service will publish an event to notify the payment service that after the payment is processed, the resturent service
+     * had refused the order and the status now is cancelling and we need the payment service to rollback the payment operation.
+     * and we will change the status from APPROVED -> CANCELLING
+     */
     public void initCancellation() {
+        if (this.status != OrderStatus.APPROVED)
+            throw new OrderDomainException("order is not in the valid state for resturant to refuse the order");
+        this.status = OrderStatus.CANCELLING;
     }
 
     // * change the status from CANCELLING -> CANCELLED
     public void cancel() {
+        if (this.status != OrderStatus.CANCELLING)
+            throw new OrderDomainException("order is not in the valid state to be cancelled !");
+        this.status = OrderStatus.CANCELLED;
     }
-
 }

@@ -2,15 +2,51 @@ package com.food.ordering.system.entity;
 
 import com.food.ordering.system.domain.entity.AggregateRoot;
 import com.food.ordering.system.domain.valueobject.*;
+import com.food.ordering.system.exception.OrderDomainException;
+import com.food.ordering.system.valueobject.OrderItemID;
 import com.food.ordering.system.valueobject.StreetAddress;
 import com.food.ordering.system.valueobject.TrackingID;
 
 import javax.sound.midi.Track;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class Order extends AggregateRoot<OrderID> {
 
+    // ? : private constructor for Order entity to be used in builder-pattern
+    private Order(Builder builder) {
+        super.setId(builder.orderID);
+        this.customerId = builder.customerID;
+        this.resturantID = builder.resturantID;
+        this.trackingId = builder.trackingID;
+        this.orderItems = builder.orderItems;
+        this.totalPrice = builder.totalPrice;
+        this.failureMsgs = builder.failureMsgs;
+        this.status = builder.status;
+        this.shippingAddress = builder.shippingAddress;
+    }
+
+    // ? : private final fields of the Order entity
+    private final CustomerID customerId;
+    private final ResturantID resturantID;
+    private final StreetAddress shippingAddress;
+
+    //    used to track the order and i use this field to not use the PK in our application logic
+    private TrackingID trackingId;
+
+    private final Money totalPrice;
+
+    // each order has a lsit of order items
+    private List<OrderItem> orderItems;
+
+    private OrderStatus status; // not final because it will change through the life-cycle of the app
+
+    private List<String> failureMsgs;
+
+
+    // ? : implementation of the builder pattern
     public static class Builder {
         private OrderID orderID;
         private CustomerID customerID;
@@ -20,7 +56,7 @@ public class Order extends AggregateRoot<OrderID> {
         private List<OrderItem> orderItems;
         private List<String> failureMsgs;
         private OrderStatus status;
-        private StreetAddress streetAddress;
+        private StreetAddress shippingAddress;
 
         public Builder orderID(OrderID val) {
             this.orderID = val;
@@ -64,8 +100,8 @@ public class Order extends AggregateRoot<OrderID> {
             return this;
         }
 
-        public Builder streetAddress(StreetAddress val) {
-            this.streetAddress = val;
+        public Builder shippingAddress(StreetAddress val) {
+            this.shippingAddress = val;
             return this;
         }
 
@@ -75,32 +111,89 @@ public class Order extends AggregateRoot<OrderID> {
         }
     }
 
-    private Order(Builder builder) {
-        super.setId(builder.orderID);
-        this.customerId = builder.customerID;
-        this.resturantID = builder.resturantID;
-        this.trackingId = builder.trackingID;
-        this.orderItems = builder.orderItems;
-        this.totalPrice = builder.totalPrice;
-        this.failureMsgs = builder.failureMsgs;
-        this.status = builder.status;
-        this.streetAddress = builder.streetAddress;
+    // ? : domain logic methods
+    // * gives initial values to the Order entity fields
+    public void initializeOrder() {
+        // initialize the identifier
+        this.initializeOrderID(UUID.randomUUID());
+        // initialize the status to start with PENDING
+        this.initializeOrderAsPENDING();
+        // initialize the order items
+        orderItems = this.initializeOrderItems();
+        // initialize the tracking identifier
+        this.initializeOrderTrackingID(UUID.randomUUID());
     }
 
-    private final CustomerID customerId;
-    private final ResturantID resturantID;
-    private final StreetAddress streetAddress;
+    private void initializeOrderID(UUID id) {
+        this.setId(new OrderID(id));
+    }
 
-    //    used to track the order and i use this field to not use the PK in our application logic
-    private final TrackingID trackingId;
+    private void initializeOrderAsPENDING() {
+        this.status = OrderStatus.PENDING;
+    }
 
-    private final Money totalPrice;
+    private void initializeOrderTrackingID(UUID id) {
+        this.trackingId = new TrackingID(id);
+    }
 
-    // each order has a lsit of order items
-    private final List<OrderItem> orderItems;
+    private List<OrderItem> initializeOrderItems() {
+        // start with id = 1
+        Long order_item_id = 1L;
+        for (OrderItem OI : this.orderItems) {
+            OI.initializeOrderItem(this.getId(), new OrderItemID(order_item_id++));
+        }
+        return this.orderItems;
+    }
 
-    private OrderStatus status; // not final because it will change through the life-cycle of the app
 
-    private List<String> failureMsgs;
+    // * validate the order's total price, prices of the ordered items of this order, and the order initial status
+    public void validateOrder() {
+        validateOrderInitialState();
+        validateOrderPrice();
+        validateOrderItemsPriceWithTotalPrice();
+    }
+
+    private void validateOrderItemsPriceWithTotalPrice() {
+        // * sum up the total prices of all items and compare them to the total price of the order (that we had validated previously)
+        var calculatedTotalPrice = this.orderItems.stream().map(OI -> {
+            this.validateOrderItemPrice(OI);
+            return OI.getSubTotal();
+        }).reduce(Money.ZERO_MONEY, Money::AddAmount);
+        // * now compare with the calculated total price of the order
+        if (!calculatedTotalPrice.equals(this.totalPrice))
+            throw new OrderDomainException("total price is not correctly calculated !");
+    }
+
+    private void validateOrderItemPrice(OrderItem o) {
+        if (!o.validateOrderItemPrice())
+            throw new OrderDomainException(String.format("the price of order item %s is not valid", o.getProduct().getProductName()));
+    }
+
+    private void validateOrderPrice() {
+        if (!this.totalPrice.IsValidAmount())
+            throw new OrderDomainException("order price must be greater than ZERO !");
+    }
+
+    private void validateOrderInitialState() {
+        if (this.getId() != null || this.status != null)
+            throw new OrderDomainException("order is not in the right initial state !");
+
+    }
+
+    // * change the status from PENDING -> PAID
+    public void pay() {
+    }
+
+    // * change the status from PAID -> APPROVED
+    public void approve() {
+    }
+
+    // * change the status from APPROVED -> CANCELLING
+    public void initCancellation() {
+    }
+
+    // * change the status from CANCELLING -> CANCELLED
+    public void cancel() {
+    }
 
 }

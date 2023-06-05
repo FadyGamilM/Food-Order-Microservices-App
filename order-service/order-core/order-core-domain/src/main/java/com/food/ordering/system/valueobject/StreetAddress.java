@@ -5,6 +5,7 @@ import com.food.ordering.system.domain.valueobject.BaseID;
 import java.util.Objects;
 import java.util.UUID;
 
+// if the streetAddress had a problem with data-access layer impl, just remove the inheritence relation and give this entity an UUID id field and define its getter
 public class StreetAddress extends BaseID<UUID> {
     String streetName;
     String postalCode;

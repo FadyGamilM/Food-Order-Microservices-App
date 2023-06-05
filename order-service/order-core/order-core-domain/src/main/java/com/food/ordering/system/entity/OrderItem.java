@@ -3,8 +3,11 @@ package com.food.ordering.system.entity;
 import com.food.ordering.system.domain.entity.BaseEntity;
 import com.food.ordering.system.domain.valueobject.Money;
 import com.food.ordering.system.domain.valueobject.OrderID;
+import com.food.ordering.system.exception.OrderDomainException;
 import com.food.ordering.system.valueobject.OrderItemID;
 import com.food.ordering.system.valueobject.OrderItemQuantity;
+
+import java.math.BigDecimal;
 
 public class OrderItem extends BaseEntity<OrderItemID> {
 
@@ -45,6 +48,7 @@ public class OrderItem extends BaseEntity<OrderItemID> {
 
     // private constructor to be used inside the builder pattern (via the build method_
     private OrderItem(Builder builder) {
+        setId(builder.orderItemID);
         this.product = builder.product;
         this.quantity = builder.quantity;
         this.price = builder.price;
@@ -56,10 +60,16 @@ public class OrderItem extends BaseEntity<OrderItemID> {
         public Builder() {
         }
 
+        private OrderItemID orderItemID;
         private Money price;
         private Money subTotal;
         OrderItemQuantity quantity;
         Product product;
+
+        public Builder orderItemID(OrderItemID val) {
+            this.orderItemID = val;
+            return this;
+        }
 
         public Builder price(Money val) {
             this.price = val;
@@ -87,5 +97,26 @@ public class OrderItem extends BaseEntity<OrderItemID> {
         }
 
     }
+
+    // ? : domain logic methods
+    // * initialize order items by defining the identifier and the related order via its identifier
+    void initializeOrderItem(OrderID orderID, OrderItemID orderItemID) {
+        this.orderID = orderID;
+        this.setId(orderItemID);
+    }
+
+    /**
+     * compares the price of the orderItem to be the same as the matching product
+     * compares the price to be a valid money object with valid amount ( > 0 )
+     * compares the total Order-item price to be = quantity * product-price
+     *
+     * @return true if all these validations are true0
+     */
+    boolean validateOrderItemPrice() {
+        return this.price.IsValidAmount() &&
+                this.subTotal.MultiplyWithFactor(this.quantity.getQty()).getAmount().compareTo(this.price.getAmount()) == 0 &&
+                this.price.equals(this.product.getProductPrice());
+    }
+
 
 }

@@ -212,6 +212,7 @@ Order extends AggregateRoot<OrderID> {
         if (this.status != OrderStatus.APPROVED)
             throw new OrderDomainException("order is not in the valid state for resturant to refuse the order");
         this.status = OrderStatus.CANCELLING;
+        // report failure msgs
         if (failureMsgs != null) this.failureMsgs.addAll(failureMsgs.stream().filter(msg -> !msg.isBlank()).toList());
 
     }
@@ -224,9 +225,12 @@ Order extends AggregateRoot<OrderID> {
      * then the order will receive the response from resturent and after chaning the status from PAID -> CANCELLING, then the order service will
      * notify the payment to rollback the payment and based on the response from the payment the order will set from CANCELLING -> CANCELLED
      */
-    public void cancel() {
+    public void cancel(List<String> failureMsgs) {
         if (this.status != OrderStatus.CANCELLING && this.status != OrderStatus.PENDING)
             throw new OrderDomainException("order is not in the valid state to be cancelled !");
         this.status = OrderStatus.CANCELLED;
+        // report failure msgs
+        if(failureMsgs != null)
+            this.failureMsgs.addAll(failureMsgs.stream().filter(msg -> !msg.isBlank()).toList());
     }
 }

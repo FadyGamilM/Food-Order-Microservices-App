@@ -113,9 +113,9 @@ public class OrderItem extends BaseEntity<OrderItemID> {
      * @return true if all these validations are true0
      */
     boolean validateOrderItemPrice() {
-        return this.price.IsValidAmount() &&
-                this.subTotal.MultiplyWithFactor(this.quantity.getQty()).getAmount().compareTo(this.price.getAmount()) == 0 &&
-                this.price.equals(this.product.getProductPrice());
+        return this.price.IsValidAmount() // validate that the price of the order item is greater than 0
+                && this.price.MultiplyWithFactor(this.quantity.getQty()).getAmount().compareTo(this.subTotal.getAmount()) == 0 // validate that the subTotal = price_of_the_item * selected_qty
+                && this.price.equals(this.product.getProductPrice()); // finally validate that the price of the order item = the price of the wrapped product
     }
 
 

@@ -13,7 +13,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class Order extends AggregateRoot<OrderID> {
+public class
+Order extends AggregateRoot<OrderID> {
 
     // ? : private constructor for Order entity to be used in builder-pattern
     private Order(Builder builder) {

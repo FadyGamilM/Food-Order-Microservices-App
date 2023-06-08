@@ -12,33 +12,46 @@ public class Resturant extends AggregateRoot<ResturantID> {
     // its marked as final because it will be set at the initialization time, i will use builder pattern
     private final List<Product> products;
 
-    private Resturant(Builder builder){
+    public List<Product> getProducts() {
+        return products;
+    }
+
+    public boolean isResturantActive() {
+        return this.isActive;
+    }
+
+
+    private Resturant(Builder builder) {
         setId(builder.id);
         this.isActive = builder.isActive;
         this.products = builder.products;
     }
 
-    public static class Builder{
+    public static class Builder {
         private ResturantID id;
-        public Builder(){}
+
+        public Builder() {
+        }
+
         private boolean isActive;
         private List<Product> products;
-        public Builder id (ResturantID val){
+
+        public Builder id(ResturantID val) {
             this.id = id;
             return this;
         }
 
-        public Builder isActive(boolean val){
+        public Builder isActive(boolean val) {
             this.isActive = val;
             return this;
         }
 
-        public Builder products(List<Product> val){
+        public Builder products(List<Product> val) {
             this.products = val;
             return this;
         }
 
-        public Resturant build(){
+        public Resturant build() {
             return new Resturant(this);
         }
     }

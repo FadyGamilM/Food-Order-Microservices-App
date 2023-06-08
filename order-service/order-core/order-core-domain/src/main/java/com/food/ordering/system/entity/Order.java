@@ -46,6 +46,42 @@ Order extends AggregateRoot<OrderID> {
 
     private List<String> failureMsgs = new ArrayList<String>();
 
+    public List<OrderItem> getOrderItems() {
+        return orderItems;
+    }
+
+    public CustomerID getCustomerId() {
+        return customerId;
+    }
+
+    @Override
+    public OrderID getId() {
+        return super.getId();
+    }
+
+    public List<String> getFailureMsgs() {
+        return failureMsgs;
+    }
+
+    public Money getTotalPrice() {
+        return totalPrice;
+    }
+
+    public OrderStatus getStatus() {
+        return status;
+    }
+
+    public ResturantID getResturantID() {
+        return resturantID;
+    }
+
+    public StreetAddress getShippingAddress() {
+        return shippingAddress;
+    }
+
+    public TrackingID getTrackingId() {
+        return trackingId;
+    }
 
     // ? : implementation of the builder pattern
     public static class Builder {
@@ -230,7 +266,7 @@ Order extends AggregateRoot<OrderID> {
             throw new OrderDomainException("order is not in the valid state to be cancelled !");
         this.status = OrderStatus.CANCELLED;
         // report failure msgs
-        if(failureMsgs != null)
+        if (failureMsgs != null)
             this.failureMsgs.addAll(failureMsgs.stream().filter(msg -> !msg.isBlank()).toList());
     }
 }

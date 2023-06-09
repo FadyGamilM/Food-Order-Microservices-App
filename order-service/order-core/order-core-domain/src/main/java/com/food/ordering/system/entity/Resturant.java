@@ -22,22 +22,23 @@ public class Resturant extends AggregateRoot<ResturantID> {
 
 
     private Resturant(Builder builder) {
-        setId(builder.id);
+        setId(builder.resturantID);
         this.isActive = builder.isActive;
         this.products = builder.products;
     }
 
     public static class Builder {
-        private ResturantID id;
+
 
         public Builder() {
         }
 
+        private ResturantID resturantID;
         private boolean isActive;
         private List<Product> products;
 
-        public Builder id(ResturantID val) {
-            this.id = id;
+        public Builder resturantID(ResturantID val) {
+            this.resturantID = val;
             return this;
         }
 

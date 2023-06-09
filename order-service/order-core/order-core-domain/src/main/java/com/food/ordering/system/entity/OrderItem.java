@@ -10,6 +10,14 @@ import com.food.ordering.system.valueobject.OrderItemQuantity;
 import java.math.BigDecimal;
 
 public class OrderItem extends BaseEntity<OrderItemID> {
+    // private constructor to be used inside the builder pattern (via the build method_
+    private OrderItem(Builder builder) {
+        setId(builder.orderItemID);
+        this.product = builder.product;
+        this.quantity = builder.quantity;
+        this.price = builder.price;
+        this.subTotal = builder.subTotal;
+    }
 
     // the orderId will be assigned later through the business logic, so we need it to be mutable and assignable
     private OrderID orderID;
@@ -46,16 +54,7 @@ public class OrderItem extends BaseEntity<OrderItemID> {
     }
 
 
-    // private constructor to be used inside the builder pattern (via the build method_
-    private OrderItem(Builder builder) {
-        setId(builder.orderItemID);
-        this.product = builder.product;
-        this.quantity = builder.quantity;
-        this.price = builder.price;
-        this.subTotal = builder.subTotal;
-    }
-
-    // the Builder class itself
+    // ? : implementation of the builder pattern
     public static class Builder {
         public Builder() {
         }
@@ -63,8 +62,8 @@ public class OrderItem extends BaseEntity<OrderItemID> {
         private OrderItemID orderItemID;
         private Money price;
         private Money subTotal;
-        OrderItemQuantity quantity;
-        Product product;
+        private OrderItemQuantity quantity;
+        private Product product;
 
         public Builder orderItemID(OrderItemID val) {
             this.orderItemID = val;

@@ -11,7 +11,7 @@ public class StreetAddress extends BaseID<UUID> {
     String postalCode;
     String city;
 
-    protected StreetAddress(UUID val, String street, String postal, String city) {
+    public StreetAddress(UUID val, String street, String postal, String city) {
         super(val);
         this.streetName = street;
         this.postalCode = postal;

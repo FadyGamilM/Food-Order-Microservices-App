@@ -34,18 +34,16 @@ Order extends AggregateRoot<OrderID> {
     private final ResturantID resturantID;
     private final StreetAddress shippingAddress;
 
-    //    used to track the order and i use this field to not use the PK in our application logic
-    private TrackingID trackingId;
-
     private final Money totalPrice;
 
+    //    used to track the order and i use this field to not use the PK in our application logic
+    private TrackingID trackingId;
     // each order has a lsit of order items
     private List<OrderItem> orderItems = new ArrayList<OrderItem>();
-
     private OrderStatus status; // not final because it will change through the life-cycle of the app
-
     private List<String> failureMsgs = new ArrayList<String>();
 
+    // ! getters
     public List<OrderItem> getOrderItems() {
         return orderItems;
     }

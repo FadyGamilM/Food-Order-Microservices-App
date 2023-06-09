@@ -22,6 +22,8 @@ public class PaymentResponse {
     @NotNull
     private final UUID ID;
     @NotNull
+    private final UUID sagaID;
+    @NotNull
     private final UUID paymentID;
     @NotNull
     private final UUID orderID;
@@ -29,8 +31,6 @@ public class PaymentResponse {
     private final UUID customerID;
     @NotNull
     private final BigDecimal price;
-    @NotNull
-    private final UUID sagaID;
     @NotNull
     private final PaymentStatus paymentStatus;
     @NotNull
